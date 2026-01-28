@@ -1,0 +1,23 @@
+# Data processing
+pandas==2.1.4
+numpy==1.26.3
+
+# ML and similarity
+scipy==1.11.4
+scikit-learn==1.4.0
+
+# Database
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+
+# Redis (for cache invalidation)
+redis==5.0.1
+
+# Utilities
+python-dotenv==1.0.0
+tqdm==4.66.1
+
+# Jupyter (optional, for notebooks)
+jupyter==1.0.0
+matplotlib==3.8.2
+seaborn==0.13.1
