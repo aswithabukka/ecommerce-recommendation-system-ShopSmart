@@ -1,1 +1,11 @@
+## Resume Points
 
+ADMIN DASHBOARD
+
+1. I built an analytics dashboard that tracks the conversion funnel. By analyzing the view-to-purchase ratio, we can identify drop-off points and 
+optimize the recommendation algorithm to improve conversions."
+2. The trending algorithm uses exponential time decay with a configurable lambda. Products with recent activity get higher scores than those with equal 
+historical engagement but older timestamps. This ensures the homepage always shows fresh, currently-popular items rather than legacy bestsellers.
+3. I built an admin dashboard for our recommendation system because production ML isn't just about accuracy metrics - you need operational visibility. 
+The cache management interface was critical because our ML pipelines run periodically, and without manual cache invalidation, users would see stale 
+recommendations for up to an hour."
