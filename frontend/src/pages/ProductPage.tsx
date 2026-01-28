@@ -4,10 +4,12 @@ import { getProduct } from '../services/api';
 import { trackView, trackAddToCart } from '../services/tracking';
 import { SimilarProducts } from '../components/SimilarProducts';
 import { Loading } from '../components/Loading';
+import { useCart } from '../contexts/CartContext';
 import type { Product } from '../types';
 
 export const ProductPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,9 +46,19 @@ export const ProductPage: React.FC = () => {
 
   const handleAddToCart = async () => {
     if (product) {
-      await trackAddToCart(product.id);
-      setAddedToCart(true);
-      setTimeout(() => setAddedToCart(false), 2000);
+      try {
+        // Track the event
+        await trackAddToCart(product.id);
+
+        // Add to cart context
+        addToCart(product);
+
+        // Show success feedback
+        setAddedToCart(true);
+        setTimeout(() => setAddedToCart(false), 2000);
+      } catch (error) {
+        console.error('Failed to add to cart:', error);
+      }
     }
   };
 
