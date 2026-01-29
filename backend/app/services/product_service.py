@@ -63,15 +63,16 @@ class ProductService:
             query = query.filter(Product.price <= max_price)
 
         # Apply rating filter
-        if min_rating is not None:
-            query = query.filter(Product.average_rating >= min_rating)
+        # Note: average_rating column removed from schema
+        # if min_rating is not None:
+        #     query = query.filter(Product.average_rating >= min_rating)
 
         # Get total count
         total = query.count()
 
-        # Apply pagination - order by rating desc for better UX
+        # Apply pagination - order by most recent first
         offset = (page - 1) * page_size
-        products = query.order_by(Product.average_rating.desc(), Product.id).offset(offset).limit(page_size).all()
+        products = query.order_by(Product.created_at.desc(), Product.id).offset(offset).limit(page_size).all()
 
         return products, total
 
