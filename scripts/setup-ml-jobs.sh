@@ -23,7 +23,7 @@ echo "Creating ml-data-loader job..."
 gcloud run jobs create ml-data-loader \
   --image=$ML_IMAGE \
   --region=$REGION \
-  --add-cloudsql-instances=$PROJECT_ID:$REGION:shopsmart-db \
+  --set-cloudsql-instances=$PROJECT_ID:$REGION:shopsmart-db \
   --vpc-connector=shopsmart-connector \
   --set-secrets=DATABASE_URL=database-url:latest,REDIS_URL=redis-url:latest \
   --cpu=1 \
@@ -45,7 +45,7 @@ echo "Creating ml-trending job..."
 gcloud run jobs create ml-trending \
   --image=$ML_IMAGE \
   --region=$REGION \
-  --add-cloudsql-instances=$PROJECT_ID:$REGION:shopsmart-db \
+  --set-cloudsql-instances=$PROJECT_ID:$REGION:shopsmart-db \
   --vpc-connector=shopsmart-connector \
   --set-secrets=DATABASE_URL=database-url:latest,REDIS_URL=redis-url:latest \
   --cpu=1 \
@@ -67,7 +67,7 @@ echo "Creating ml-similarity job..."
 gcloud run jobs create ml-similarity \
   --image=$ML_IMAGE \
   --region=$REGION \
-  --add-cloudsql-instances=$PROJECT_ID:$REGION:shopsmart-db \
+  --set-cloudsql-instances=$PROJECT_ID:$REGION:shopsmart-db \
   --vpc-connector=shopsmart-connector \
   --set-secrets=DATABASE_URL=database-url:latest,REDIS_URL=redis-url:latest \
   --cpu=2 \
@@ -89,7 +89,7 @@ echo "Creating ml-evaluation job..."
 gcloud run jobs create ml-evaluation \
   --image=$ML_IMAGE \
   --region=$REGION \
-  --add-cloudsql-instances=$PROJECT_ID:$REGION:shopsmart-db \
+  --set-cloudsql-instances=$PROJECT_ID:$REGION:shopsmart-db \
   --vpc-connector=shopsmart-connector \
   --set-secrets=DATABASE_URL=database-url:latest,REDIS_URL=redis-url:latest \
   --cpu=1 \
