@@ -277,6 +277,52 @@ npm test
 # Visit http://localhost:8000/docs for interactive API documentation
 ```
 
+## ☁️ GCP Production Deployment
+
+Deploy ShopSmart to Google Cloud Platform for production use with autoscaling, managed databases, and automated ML pipelines.
+
+### Quick Deploy
+
+```bash
+# 1. Setup GCP infrastructure
+cd scripts
+./setup-gcp.sh
+
+# 2. Deploy backend
+cd backend
+gcloud builds submit --config=cloudbuild.yaml
+
+# 3. Deploy frontend
+cd frontend
+gcloud builds submit --config=cloudbuild.yaml
+
+# 4. Deploy ML pipelines
+cd ml
+gcloud builds submit --config=cloudbuild.yaml
+```
+
+### GCP Services Used
+
+- **Cloud Run**: Serverless containers with autoscaling (backend, frontend)
+- **Cloud SQL**: Managed PostgreSQL 15 with automated backups
+- **Cloud Memorystore**: Managed Redis 7 for caching
+- **Cloud Run Jobs**: Scheduled ML pipelines (trending hourly, similarity daily)
+- **Cloud Scheduler**: Automated pipeline execution
+- **Cloud Build**: CI/CD for automated deployments
+- **Secret Manager**: Secure credential storage
+
+### Cost Estimate
+
+**Startup**: ~$115-217/month (includes free tiers)
+**Production**: ~$620-970/month (with high availability and CDN)
+
+### Complete Documentation
+
+For detailed deployment instructions, troubleshooting, and maintenance guides, see:
+- **[GCP Deployment Guide](docs/GCP_DEPLOYMENT.md)** - Complete deployment documentation
+- **[Technical Documentation](docs/TECHNICAL_DOCUMENTATION.md)** - System architecture and implementation
+- **[Interview Guide](docs/INTERVIEW_GUIDE.md)** - Q&A for technical discussions
+
 ## 🎯 Use Cases
 
 1. **E-Commerce Platforms**: Product recommendations for online stores

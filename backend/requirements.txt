@@ -1,6 +1,7 @@
 # FastAPI and server
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
+gunicorn==21.2.0
 python-multipart==0.0.6
 
 # Database
@@ -19,6 +20,10 @@ email-validator==2.1.0
 # Utilities
 python-dotenv==1.0.0
 httpx==0.26.0
+
+# GCP Production
+google-cloud-logging==3.8.0
+google-cloud-secret-manager==2.17.0
 
 # Testing
 pytest==7.4.4

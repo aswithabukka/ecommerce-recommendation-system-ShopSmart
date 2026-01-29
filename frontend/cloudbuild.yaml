@@ -1,0 +1,52 @@
+steps:
+  # Step 1: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/frontend:$BUILD_ID'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/frontend:latest'
+      - '-f'
+      - 'Dockerfile.production'
+      - '--build-arg'
+      - 'VITE_API_URL=https://shopsmart-backend-780605319553.us-central1.run.app'
+      - '.'
+
+  # Step 2: Push BUILD_ID-tagged image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/frontend:$BUILD_ID'
+
+  # Step 3: Push latest tag to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/frontend:latest'
+
+  # Step 4: Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'shopsmart-frontend'
+      - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/frontend:$BUILD_ID'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--cpu=1'
+      - '--memory=256Mi'
+      - '--min-instances=1'
+      - '--max-instances=50'
+      - '--concurrency=100'
+      - '--timeout=60'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+
+# Build timeout: 20 minutes
+timeout: 1200s
+
+# Build options
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY

@@ -1,0 +1,65 @@
+steps:
+  # Step 1: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/backend:$BUILD_ID'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/backend:latest'
+      - '-f'
+      - 'Dockerfile.production'
+      - '.'
+
+  # Step 2: Push BUILD_ID-tagged image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/backend:$BUILD_ID'
+
+  # Step 3: Push latest tag to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/backend:latest'
+
+  # Step 4: Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'shopsmart-backend'
+      - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/backend:$BUILD_ID'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--add-cloudsql-instances=$PROJECT_ID:us-central1:shopsmart-db'
+      - '--vpc-connector=shopsmart-connector'
+      - '--set-secrets=DATABASE_URL=database-url:latest,REDIS_URL=redis-url:latest,CORS_ORIGINS=cors-origins:latest'
+      - '--set-env-vars=DEBUG=false'
+      - '--cpu=1'
+      - '--memory=512Mi'
+      - '--min-instances=1'
+      - '--max-instances=100'
+      - '--concurrency=80'
+      - '--timeout=300'
+      - '--allow-unauthenticated'
+      - '--service-account=shopsmart-backend@$PROJECT_ID.iam.gserviceaccount.com'
+
+  # Step 5: Health check
+  - name: 'gcr.io/cloud-builders/curl'
+    args:
+      - '-f'
+      - '-m'
+      - '10'
+      - '$$BACKEND_URL/health'
+    env:
+      - 'BACKEND_URL=https://shopsmart-backend-$$(gcloud run services describe shopsmart-backend --region=us-central1 --format="value(status.url)")'
+    allowFailure: true
+
+# Build timeout: 20 minutes
+timeout: 1200s
+
+# Build options
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY

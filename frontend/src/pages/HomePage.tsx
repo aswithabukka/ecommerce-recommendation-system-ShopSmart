@@ -155,7 +155,7 @@ export const HomePage: React.FC = () => {
                 {product.name}
               </h3>
               <p className="text-sm font-semibold text-gray-900 mt-1">
-                ${product.price.toFixed(2)}
+                ${product.price?.toFixed(2) ?? '0.00'}
               </p>
             </Link>
           ))}

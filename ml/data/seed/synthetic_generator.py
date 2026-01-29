@@ -30,6 +30,7 @@ class SyntheticDataGenerator:
             "Automotive",
             "Health",
         ]
+        self.category_id_map = {}  # Will be populated after categories are created
 
     def generate_all(
         self,
@@ -46,6 +47,7 @@ class SyntheticDataGenerator:
         print(f"  Time span: {days_back} days")
 
         # Clear existing data
+        print("Clearing existing data...")
         with self.engine.begin() as conn:
             conn.execute(text("DELETE FROM product_reviews"))
             conn.execute(text("DELETE FROM events"))
@@ -55,13 +57,22 @@ class SyntheticDataGenerator:
             conn.execute(text("DELETE FROM users"))
             conn.execute(text("DELETE FROM products"))
             conn.execute(text("DELETE FROM categories"))
-            # Reset sequences
-            conn.execute(text("ALTER SEQUENCE categories_id_seq RESTART WITH 1"))
-            conn.execute(text("ALTER SEQUENCE products_id_seq RESTART WITH 1"))
-            conn.execute(text("ALTER SEQUENCE users_id_seq RESTART WITH 1"))
-            conn.execute(text("ALTER SEQUENCE events_id_seq RESTART WITH 1"))
-            conn.execute(text("ALTER SEQUENCE product_reviews_id_seq RESTART WITH 1"))
             # Commit happens automatically at end of with block
+
+        print("Data cleared successfully")
+
+        # Try to reset sequences in a separate transaction (may fail if user doesn't have ownership privileges)
+        # If this fails, it won't affect the data clearing above
+        try:
+            with self.engine.begin() as conn:
+                conn.execute(text("ALTER SEQUENCE categories_id_seq RESTART WITH 1"))
+                conn.execute(text("ALTER SEQUENCE products_id_seq RESTART WITH 1"))
+                conn.execute(text("ALTER SEQUENCE users_id_seq RESTART WITH 1"))
+                conn.execute(text("ALTER SEQUENCE events_id_seq RESTART WITH 1"))
+                conn.execute(text("ALTER SEQUENCE product_reviews_id_seq RESTART WITH 1"))
+            print("Sequences reset successfully")
+        except Exception as e:
+            print(f"Warning: Could not reset sequences (will continue with existing sequence values): {str(e)[:100]}")
 
         print("\n1. Generating categories...")
         self._generate_categories()
@@ -81,13 +92,19 @@ class SyntheticDataGenerator:
         print("  python -m pipelines.similarity_pipeline")
 
     def _generate_categories(self):
-        """Insert categories."""
+        """Insert categories and return their IDs."""
         categories_df = pd.DataFrame({'name': self.categories})
 
         with self.engine.begin() as conn:
             categories_df.to_sql('categories', conn, if_exists='append', index=False)
 
+        # Fetch the actual category IDs that were created
+        with self.engine.connect() as conn:
+            result = pd.read_sql("SELECT id, name FROM categories ORDER BY id", conn)
+            self.category_id_map = dict(zip(result['name'], result['id']))
+
         print(f"    Created {len(self.categories)} categories")
+        print(f"    Category IDs: {list(self.category_id_map.values())}")
 
     def _generate_products(self, num_products: int):
         """Generate synthetic products."""
@@ -124,11 +141,8 @@ class SyntheticDataGenerator:
             name_prefix = np.random.choice(product_names)
             name_suffix = np.random.choice(product_types)
 
-            # Generate realistic ratings (biased towards 4-5 stars)
-            rating = np.random.choice([3, 4, 5], p=[0.1, 0.4, 0.5])
-            rating_variation = np.random.uniform(-0.5, 0.5)
-            average_rating = max(1.0, min(5.0, rating + rating_variation))
-            review_count = int(np.random.exponential(scale=15))  # Most products have few reviews
+            # Use the actual category ID from the database
+            category_id = self.category_id_map[category_name]
 
             products.append({
                 'external_id': f'PROD_{i:05d}',
@@ -136,10 +150,8 @@ class SyntheticDataGenerator:
                 'description': f'High-quality {category_name.lower()} product with excellent features and great value.',
                 'price': round(np.random.uniform(9.99, 499.99), 2),
                 'image_url': category_images[category_name],
-                'category_id': category_idx + 1,
-                'is_active': True,
-                'average_rating': round(average_rating, 1),
-                'review_count': review_count
+                'category_id': category_id,
+                'is_active': True
             })
 
         df = pd.DataFrame(products)

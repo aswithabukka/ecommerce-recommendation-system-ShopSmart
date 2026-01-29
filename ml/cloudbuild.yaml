@@ -1,0 +1,32 @@
+steps:
+  # Step 1: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/ml:$BUILD_ID'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/ml:latest'
+      - '-f'
+      - 'Dockerfile.production'
+      - '.'
+
+  # Step 2: Push BUILD_ID-tagged image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/ml:$BUILD_ID'
+
+  # Step 3: Push latest tag to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/shopsmart/ml:latest'
+
+# Build timeout: 15 minutes
+timeout: 900s
+
+# Build options
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
