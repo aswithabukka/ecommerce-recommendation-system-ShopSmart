@@ -44,8 +44,6 @@ class Product(Base):
     image_url = Column(String(1000), nullable=True)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     is_active = Column(Boolean, default=True)
-    average_rating = Column(Float, default=0.0)
-    review_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
