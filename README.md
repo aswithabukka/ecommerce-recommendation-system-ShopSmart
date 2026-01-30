@@ -77,6 +77,7 @@ User Request
 - **Cache**: Redis 7
 - **API Documentation**: OpenAPI (Swagger UI)
 - **Validation**: Pydantic v2
+- **Production Server**: Gunicorn + Uvicorn workers
 
 ### Frontend
 - **Framework**: React 18 with TypeScript
@@ -84,16 +85,32 @@ User Request
 - **Styling**: Tailwind CSS 3
 - **HTTP Client**: Axios
 - **State Management**: React Context API
+- **Build Tool**: Vite
+- **Production Server**: Nginx
 
 ### ML & Data Processing
 - **Libraries**: NumPy, pandas, scikit-learn
 - **Algorithms**: Cosine similarity, time-decay exponential scoring
 - **Evaluation**: Recall, Precision, Hit Rate, NDCG
+- **Pipeline Orchestration**: Python modules with scheduled execution
 
-### Infrastructure
+### Cloud Infrastructure (GCP)
+- **Compute**: Cloud Run (Serverless containers with autoscaling)
+- **Database**: Cloud SQL for PostgreSQL 15
+- **Cache**: Cloud Memorystore for Redis 7
+- **Batch Processing**: Cloud Run Jobs (ML pipelines)
+- **Scheduling**: Cloud Scheduler (Hourly/Daily pipeline automation)
+- **CI/CD**: Cloud Build with GitHub integration
+- **Networking**: VPC with Serverless VPC Connector
+- **Container Registry**: Artifact Registry
+- **Secrets**: Secret Manager
+- **Monitoring**: Cloud Logging & Cloud Monitoring
+
+### Development & Deployment
 - **Containerization**: Docker + Docker Compose
-- **Web Server**: Uvicorn (ASGI)
-- **Development Server**: Vite (Frontend)
+- **Version Control**: Git + GitHub
+- **Infrastructure as Code**: cloudbuild.yaml, docker-compose.yml
+- **Deployment**: Automated via Cloud Build triggers
 
 ## 📊 System Performance
 
