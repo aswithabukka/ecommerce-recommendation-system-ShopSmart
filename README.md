@@ -277,51 +277,110 @@ npm test
 # Visit http://localhost:8000/docs for interactive API documentation
 ```
 
-## ☁️ GCP Production Deployment
+## ☁️ Production Deployment (GCP)
 
-Deploy ShopSmart to Google Cloud Platform for production use with autoscaling, managed databases, and automated ML pipelines.
+ShopSmart is deployed to Google Cloud Platform with full autoscaling, managed databases, and automated ML pipelines.
+
+### 🌐 Live Application
+
+- **Frontend**: https://shopsmart-frontend-zy6q4fbfwq-uc.a.run.app
+- **Backend API**: https://shopsmart-backend-780605319553.us-central1.run.app
+- **API Documentation**: https://shopsmart-backend-780605319553.us-central1.run.app/docs
+
+### Production Features
+
+- ✅ **Autoscaling**: Backend (1-100 instances), Frontend (1-50 instances)
+- ✅ **Managed Database**: Cloud SQL PostgreSQL 15 with automated backups
+- ✅ **Distributed Cache**: Cloud Memorystore Redis 7 with 99.9% SLA
+- ✅ **ML Pipelines**: Automated trending (hourly) and similarity (daily) updates via Cloud Run Jobs
+- ✅ **CI/CD**: Automated builds and deployments via Cloud Build
+- ✅ **Monitoring**: Cloud Logging and Cloud Monitoring integration
+- ✅ **Secrets Management**: Secure credential storage with Secret Manager
+- ✅ **VPC Networking**: Private network with serverless VPC connector
 
 ### Quick Deploy
 
 ```bash
-# 1. Setup GCP infrastructure
+# 1. Setup GCP infrastructure (VPC, Cloud SQL, Redis, etc.)
 cd scripts
 ./setup-gcp.sh
 
-# 2. Deploy backend
+# 2. Deploy backend service
 cd backend
 gcloud builds submit --config=cloudbuild.yaml
 
-# 3. Deploy frontend
+# 3. Deploy frontend service
 cd frontend
 gcloud builds submit --config=cloudbuild.yaml
 
-# 4. Deploy ML pipelines
-cd ml
-gcloud builds submit --config=cloudbuild.yaml
+# 4. Setup and run ML pipelines
+cd scripts
+./setup-ml-jobs.sh
+
+# 5. Load initial data
+gcloud run jobs execute ml-data-loader --region=us-central1 --wait
+gcloud run jobs execute ml-trending --region=us-central1 --wait
+gcloud run jobs execute ml-similarity --region=us-central1 --wait
+```
+
+### GCP Services Architecture
+
+```
+Users → Cloud Load Balancer
+           ↓
+    ┌──────┴──────┐
+    ▼             ▼
+Cloud Run      Cloud Run
+(Backend)      (Frontend)
+    ↓
+    ├─→ Cloud SQL (PostgreSQL)
+    ├─→ Cloud Memorystore (Redis)
+    └─→ VPC Network
+
+Cloud Scheduler → Cloud Run Jobs (ML Pipelines)
+                      ↓
+                  Cloud SQL + Redis
 ```
 
 ### GCP Services Used
 
-- **Cloud Run**: Serverless containers with autoscaling (backend, frontend)
-- **Cloud SQL**: Managed PostgreSQL 15 with automated backups
-- **Cloud Memorystore**: Managed Redis 7 for caching
-- **Cloud Run Jobs**: Scheduled ML pipelines (trending hourly, similarity daily)
-- **Cloud Scheduler**: Automated pipeline execution
-- **Cloud Build**: CI/CD for automated deployments
-- **Secret Manager**: Secure credential storage
+| Service | Purpose | Configuration |
+|---------|---------|---------------|
+| **Cloud Run** | Serverless backend & frontend hosting | Backend: 1-100 instances, 512MB RAM<br>Frontend: 1-50 instances, 256MB RAM |
+| **Cloud SQL** | Managed PostgreSQL database | PostgreSQL 15, db-f1-micro, Auto backups |
+| **Cloud Memorystore** | Managed Redis cache | Redis 7, 1GB Basic tier |
+| **Cloud Run Jobs** | Scheduled ML pipeline execution | 4 jobs: data-loader, trending, similarity, evaluation |
+| **Cloud Scheduler** | Automated pipeline scheduling | Hourly trending, Daily similarity |
+| **Cloud Build** | CI/CD pipeline | Auto-build on git push, 15min timeout |
+| **Secret Manager** | Secure credential storage | DATABASE_URL, REDIS_URL, CORS_ORIGINS |
+| **VPC Network** | Private networking | Serverless VPC connector for Cloud Run |
+| **Artifact Registry** | Docker image storage | us-central1 Docker repository |
+| **Cloud Logging** | Centralized logging | All services integrated |
 
-### Cost Estimate
+### Cost Breakdown
 
-**Startup**: ~$115-217/month (includes free tiers)
-**Production**: ~$620-970/month (with high availability and CDN)
+**Startup Tier** (~$115-217/month):
+- Cloud SQL (db-f1-micro): $7.50/month
+- Cloud Memorystore (Basic 1GB): $35/month
+- Cloud Run Backend: $50-100/month
+- Cloud Run Frontend: $20-50/month
+- Cloud Run Jobs (ML): $3-5/month
+- Cloud Build: $0-20/month (free tier covers most)
+
+**Production Tier** (~$620-970/month):
+- Cloud SQL (db-custom-2-7680): $100/month
+- Cloud Memorystore (Standard 5GB HA): $200/month
+- Cloud Run Backend: $200-400/month
+- Cloud Run Frontend: $100-200/month
+- Cloud CDN: $20-50/month
+- Other services: $50-100/month
 
 ### Complete Documentation
 
-For detailed deployment instructions, troubleshooting, and maintenance guides, see:
+For detailed deployment instructions, troubleshooting, and maintenance guides:
 - **[GCP Deployment Guide](docs/GCP_DEPLOYMENT.md)** - Complete deployment documentation
-- **[Technical Documentation](docs/TECHNICAL_DOCUMENTATION.md)** - System architecture and implementation
-- **[Interview Guide](docs/INTERVIEW_GUIDE.md)** - Q&A for technical discussions
+- **[Project Overview](docs/PROJECT_OVERVIEW.md)** - Comprehensive system architecture and cloud implementation
+- **[Load Data Guide](LOAD_DATA.md)** - Step-by-step data loading instructions
 
 ## 🎯 Use Cases
 
